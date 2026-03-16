@@ -14,9 +14,6 @@ using System.Windows.Media;
 
 namespace Tumugu
 {
-    /// <summary>
-    /// MainWindow.xaml の相互作用ロジック
-    /// </summary>
     public partial class MainWindow : Window
     {
         // 現在の保存先フォルダと編集中のファイル名を保持するフィールド
@@ -27,35 +24,34 @@ namespace Tumugu
         {
             InitializeComponent();
 
+            // キャプションバー以外でもドラッグ可能にする
+            this.MouseLeftButtonDown += (sender, e) => this.DragMove();
+
             // WebView2 の初期化と、ドラッグオーバー・ドロップイベントの無効化スクリプトの登録
             InitializeWebView();
 
             // WPF の WebView2 はブラウザ内部の右クリックを直接 WPF 側で拾えないため、CoreWebView2 のイベントを使って右クリックを検出します。
             MarkdownBrowser.CoreWebView2InitializationCompleted += MarkdownBrowser_CoreWebView2InitializationCompleted;
 
-            // 現在のモニタに合わせた作業領域を取得
-            Rect workArea = ScreenHelper.GetCurrentWorkArea(this);
+            // 初期化完了イベントで UI を切り替える初期状態では WebView2 を非表示にしておき、初期化完了後に表示する（これで真っ白な空白が一瞬見えるのを防止）
+            MarkdownBrowser.Visibility = Visibility.Hidden;
+            MarkdownBrowser.CoreWebView2InitializationCompleted += (_, __) =>
+            {
+                MarkdownBrowser.Visibility = Visibility.Visible;
+            };
 
+            // 現在のモニタに合わせた作業領域を取得
             // 最大化時のサイズを制限（これでタスクバーを隠さない）
+            Rect workArea = ScreenHelper.GetCurrentWorkArea(this);
             this.MaxWidth = workArea.Width;
             this.MaxHeight = workArea.Height;
-
-            // キャプションバー以外でもドラッグ可能にする
-            this.MouseLeftButtonDown += (sender, e) => this.DragMove();
 
             this.Topmost = true;
             this.Topmost = false;
 
-            // default save folder
-            _currentEditFolder = AppDomain.CurrentDomain.BaseDirectory;
             _currentEditFolder = @"C:\Temp";
 
-            (double physicalWidth, double physicalHeight) = GetScreenSize();
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            //RewriteMarkdownBrowser();
+            //(double physicalWidth, double physicalHeight) = GetScreenSize();
         }
 
         private async void InitializeWebView()
@@ -134,42 +130,6 @@ namespace Tumugu
         // DPIを考慮した「物理ピクセル」を取得する
         // Windows 11のような高解像度ディスプレイ環境では、論理サイズと物理ピクセルが異なります。
         // 現在のウィンドウが表示されているモニタの「正確な倍率」を知るには、WPFのVisualTreeHelperを使います。
-
-        private (double physicalWidth, double physicalHeight) GetScreenSize()
-        {
-            // Windowクラス内での実行を想定
-            var dpi = VisualTreeHelper.GetDpi(this);
-
-            double dpiScaleX = dpi.DpiScaleX; // 例: 1.25 (125%)
-            double dpiScaleY = dpi.DpiScaleY;
-
-            // 物理的なピクセル解像度を計算
-            double physicalWidth = SystemParameters.PrimaryScreenWidth * dpiScaleX;
-            double physicalHeight = SystemParameters.PrimaryScreenHeight * dpiScaleY;
-
-            return (physicalWidth, physicalHeight);
-        }
-
-        private void MarkdownTextBox_PreviewDragOver(object sender, DragEventArgs e)
-        {
-            //var drugFiles = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-            //string drugFileFullPath = drugFiles[0];
-
-            //// ファイルが1つだけで、拡張子が .md なら受け入れ
-            //if (drugFiles.Length == 1 && Path.GetExtension(drugFileFullPath) == ".md")
-            //{
-            //    e.Effects = DragDropEffects.Copy;
-            //    Mouse.OverrideCursor = Cursors.Hand;
-            //}
-            //else
-            //{
-            //    e.Effects = DragDropEffects.None;
-            //    Mouse.OverrideCursor = null;
-            //}
-
-            //e.Handled = true;
-        }
 
         private void MarkdownTextBox_PreviewDragLeave(object sender, DragEventArgs e)
         {

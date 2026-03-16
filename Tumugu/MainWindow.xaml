@@ -14,7 +14,7 @@
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         Title="MainWindow" Height="650" Width="900" BorderThickness="1" WindowStartupLocation="Manual"
-        ResizeMode="CanResize" WindowStyle="None" Loaded="Window_Loaded">
+        ResizeMode="CanResize" WindowStyle="None">
     <!-- WindowChrome を使ってカスタムタイトルバーを作っている場合、
          CaptionHeight のデフォルト値（約 30px）が 「ドラッグ領域」として確保されるため、
          その高さ分だけ 上部に空白が強制的に入ります。
