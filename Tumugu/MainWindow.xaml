@@ -102,11 +102,7 @@
     </Window.Resources>
 
     <WindowChrome.WindowChrome>
-        <WindowChrome
-            CaptionHeight="0"
-            ResizeBorderThickness="5"
-            GlassFrameThickness="0"
-            UseAeroCaptionButtons="False" />
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" GlassFrameThickness="0" UseAeroCaptionButtons="False" />
     </WindowChrome.WindowChrome>
 
     <Grid>
@@ -117,7 +113,7 @@
         </Grid.RowDefinitions>
 
         <!-- ヘッダー部分 -->
-        <Grid Grid.Row="0" Height="45" Background="#FF4E4E4E" Margin="0, -5, 0, 0">
+        <Grid Grid.Row="0" Height="50" Background="#FF4E4E4E" Margin="0, -5, 0, 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50"/>
                 <ColumnDefinition Width="120"/>
@@ -130,15 +126,9 @@
             <materialDesign:PackIcon Kind="ChartBubble" Grid.Column="0" Foreground="White" Height="45" Width="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
             <!-- タイトル -->
-            <!--<Canvas Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left">-->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Label Content="Tu" FontSize="22" FontFamily="Arial Black" Foreground="White" Margin="0,1,0,0"/>
-                <Label Content="m" FontSize="22" FontFamily="Arial Black" Foreground="SteelBlue" Margin="-7,1,0,0"/>
-                <Label Content="ugu" FontSize="22" FontFamily="Arial Black" Foreground="white" Margin="-7,1,0,0"/>
-            </StackPanel>
-            <!--<Label Content="- Markdown Editor -" FontSize="9" FontFamily="Arial Black" Foreground="WhiteSmoke" Margin="0,27,0,0"/>-->
-            <!--</Canvas>-->
+            <Label Grid.Column="1" Content="Tumugu" FontSize="22" FontFamily="Arial Black" Foreground="White" VerticalAlignment="Center"/>
 
+            <!-- トップメニューアイコン -->
             <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left">
                 <Button x:Name="BtnFolder" Style="{StaticResource ButtonDefault}" Width="75" ToolTip="名前をつけて保存" VerticalAlignment="Center" Click="BtnFolder_Click">
                     <StackPanel Orientation="Vertical">
@@ -188,7 +178,7 @@
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
                             AllowDrop="True" TextChanged="RichTextBox_TextChanged" PreviewMouseWheel="RichMarkdownTextBox_PreviewMouseWheel"
-                            FontFamily="Consolas" FontSize="16" Drop="RichMarkdownTextBox_Drop" PreviewDragOver="RichMarkdownTextBox_PreviewDragOver">
+                            FontFamily="Consolas" FontSize="16" Drop="RichMarkdownTextBox_Drop" PreviewDragOver="RichMarkdownTextBox_PreviewDragOver" PreviewDragLeave="RichMarkdownTextBox_PreviewDragLeave">
                     <RichTextBox.Resources>
                         <Style TargetType="{x:Type Paragraph}">
                             <Setter Property="LineHeight" Value="16" />
@@ -235,8 +225,9 @@
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button x:Name="Btn0Percent" Content="なし" Style="{StaticResource ButtonSub}" Click="Btn0Percent_Click" />
-                <Button x:Name="Btn25Percent" Content="25%" Style="{StaticResource ButtonSub}" Click="Btn25Percent_Click" Margin="5,0,5,0"/>
-                <Button x:Name="Btn50Percent" Content="50%" Style="{StaticResource ButtonSub}" Click="Btn50Percent_Click"/>
+                <Button x:Name="Btn25Percent" Content="25%" Style="{StaticResource ButtonSub}" Click="Btn25Percent_Click" Margin="5,0,0,0"/>
+                <Button x:Name="Btn50Percent" Content="50%" Style="{StaticResource ButtonSub}" Click="Btn50Percent_Click" Margin="5,0,0,0"/>
+                <Button x:Name="Btn100Percent" Content="100%" Style="{StaticResource ButtonSub}" Click="Btn100Percent_Click" Margin="5,0,0,0"/>
                 <Label Content="対象ファイル：" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <Label x:Name="lblEditFile" Content="C:¥Temp\..." Foreground="White" VerticalAlignment="Center" />
             </StackPanel>

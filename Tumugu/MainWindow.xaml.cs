@@ -35,10 +35,6 @@ namespace Tumugu
 
             // 初期化完了イベントで UI を切り替える初期状態では WebView2 を非表示にしておき、初期化完了後に表示する（これで真っ白な空白が一瞬見えるのを防止）
             MarkdownBrowser.Visibility = Visibility.Hidden;
-            MarkdownBrowser.CoreWebView2InitializationCompleted += (_, __) =>
-            {
-                MarkdownBrowser.Visibility = Visibility.Visible;
-            };
 
             // 現在のモニタに合わせた作業領域を取得
             // 最大化時のサイズを制限（これでタスクバーを隠さない）
@@ -50,25 +46,152 @@ namespace Tumugu
             this.Topmost = false;
 
             _currentEditFolder = @"C:\Temp";
-
-            //(double physicalWidth, double physicalHeight) = GetScreenSize();
         }
 
         private async void InitializeWebView()
         {
             await MarkdownBrowser.EnsureCoreWebView2Async();
 
+            MarkdownBrowser.NavigateToString(@"
+                    <!DOCTYPE html>
+                    <html>
+                    <head> <meta charset=""""utf-8""""> <base href=""""https://local.example/""""> </head>
+                    <style>
+                    /* ===== Markdown Base Style ===== */
+                    body {{
+                        font-family: -apple-system, BlinkMacSystemFont, """"Segoe UI"""", Helvetica, Arial, sans-serif;
+                        font-size: 16px;
+                        line-height: 1.6;
+                        color: #24292e;
+                        background: #ffffff;
+                        padding: 20px;
+                    }}
+
+                    /* Headings */
+                    h1, h2, h3, h4, h5, h6 {{
+                        font-weight: 600;
+                        margin-top: 24px;
+                        margin-bottom: 16px;
+                        line-height: 1.25;
+                    }}
+                    h1 {{ font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: .3em; }}
+                    h2 {{ font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: .3em; }}
+                    h3 {{ font-size: 1.25em; }}
+                    h4 {{ font-size: 1em; }}
+                    h5 {{ font-size: .875em; }}
+                    h6 {{ font-size: .85em; color: #6a737d; }}
+
+                    /* Paragraph */
+                    p {{
+                        margin: 16px 0;
+                    }}
+
+                    /* Links */
+                    a {{
+                        color: #0366d6;
+                        text-decoration: none;
+                    }}
+                    a:hover {{
+                        text-decoration: underline;
+                    }}
+
+                    /* Lists */
+                    ul, ol {{
+                        padding-left: 2em;
+                        margin: 16px 0;
+                    }}
+                    li {{
+                        margin: 4px 0;
+                    }}
+
+                    /* Blockquote */
+                    blockquote {{
+                        padding: 0 1em;
+                        color: #6a737d;
+                        border-left: .25em solid #dfe2e5;
+                        margin: 16px 0;
+                    }}
+
+                    /* Code (inline) */
+                    code {{
+                        background-color: rgba(27,31,35,.05);
+                        padding: .2em .4em;
+                        border-radius: 3px;
+                        font-family: SFMono-Regular, Consolas, """"Liberation Mono"""", Menlo, monospace;
+                        font-size: 85%;
+                    }}
+
+                    /* Code block */
+                    pre {{
+                        background-color: #f6f8fa;
+                        padding: 16px;
+                        border-radius: 6px;
+                        overflow: auto;
+                    }}
+                    pre code {{
+                        background: none;
+                        padding: 0;
+                        font-size: 85%;
+                    }}
+
+                    /* Table */
+                    table {{
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin: 16px 0;
+                    }}
+                    th, td {{
+                        border: 1px solid #dfe2e5;
+                        padding: 6px 13px;
+                    }}
+                    th {{
+                        background: #f6f8fa;
+                        font-weight: 600;
+                    }}
+                    tr:nth-child(even) {{
+                        background: #fafbfc;
+                    }}
+
+                    /* Horizontal rule */
+                    hr {{
+                        border: 0;
+                        border-top: 1px solid #eaecef;
+                        margin: 24px 0;
+                    }}
+
+                    /* Images */
+                    img {{
+                        max-width: 100%;
+                        height: auto;
+                    }}
+
+                    /* Task list */
+                    .task-list-item {{
+                        list-style-type: none;
+                    }}
+                    .task-list-item input {{
+                        margin-right: .5em;
+                    }}
+                    </style>
+
+                    </head>
+                    <body>
+                    <div id='content'></div>
+                    </body>
+                    </html>
+                    ");
+
             // ページロード時および遷移時に常に実行されるスクリプトを登録
             await MarkdownBrowser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(@"
-                window.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'none'; // カーソルを禁止にする
-                }, false);
+                    window.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'none'; // カーソルを禁止にする
+                    }, false);
 
-                window.addEventListener('drop', function(e) {
-                    e.preventDefault(); // ドロップ動作を無効化
-                }, false);
-            ");
+                    window.addEventListener('drop', function(e) {
+                        e.preventDefault(); // ドロップ動作を無効化
+                    }, false);
+                ");
         }
 
         private void LblTitleBlankArea_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -127,19 +250,6 @@ namespace Tumugu
             menu.IsOpen = true;
         }
 
-        // DPIを考慮した「物理ピクセル」を取得する
-        // Windows 11のような高解像度ディスプレイ環境では、論理サイズと物理ピクセルが異なります。
-        // 現在のウィンドウが表示されているモニタの「正確な倍率」を知るには、WPFのVisualTreeHelperを使います。
-
-        private void MarkdownTextBox_PreviewDragLeave(object sender, DragEventArgs e)
-        {
-            // ウィンドウ全体のカーソルをリセット
-            Mouse.OverrideCursor = null; 
-            this.Cursor = null;
-        }
-
-
-
         private async void RewriteMarkdownBrowser()
         {
             if (MarkdownBrowser == null) return;
@@ -148,6 +258,10 @@ namespace Tumugu
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             string plainText = GetPlainTextFromRichTextBox(RichMarkdownTextBox);
             var htmlBody = Markdown.ToHtml(plainText, pipeline);
+
+            await MarkdownBrowser.ExecuteScriptAsync($@"
+                document.getElementById('content').innerHTML = `{htmlBody}`;
+                ");
 
             // 最低限の CSS を付与（白基調・読みやすい
             var htmlTemplate = $@"
@@ -278,8 +392,6 @@ namespace Tumugu
                     </body>
                     </html>
                     ";
-            //                     <div id=""content""></div>
-
 
             // WebView2 に HTML を表示
             await MarkdownBrowser.EnsureCoreWebView2Async();
@@ -288,34 +400,12 @@ namespace Tumugu
             MarkdownBrowser.CoreWebView2.NavigateToString(htmlTemplate);
         }
 
-        private void MarkdownTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            //RewriteMarkdownBrowser();
-
-            //// Markdig を使う場合の変換
-            //var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            //var htmlBody = Markdown.ToHtml(MarkdownTextBox.Text, pipeline);
-
-            ////RewriteMarkdownBrowser();
-
-            //// チラつき防止のため、部分的に更新
-            //var script = $"document.getElementById('content').innerHTML = `{htmlBody}`;";
-            //MarkdownBrowser.ExecuteScriptAsync(script);
-        }
-
-
-
-
-
-
-
         private void MarkdownBrowser_DragOver(object sender, DragEventArgs e)
         {
             // ドラッグ操作を拒否し、禁止カーソルを表示させる
             e.Effects = DragDropEffects.None;
             e.Handled = true;
         }
-
 
         private void ChangeMarkdownTextBoxWidth(double ratio)
         {
@@ -325,8 +415,17 @@ namespace Tumugu
                 return;
             }
 
-            // MarkdownTextBoxColumnの幅を変更
-            TextBoxColumn.Width = new GridLength(ratio, GridUnitType.Star);
+            if (ratio == 4)
+            {
+                TextBoxColumn.Width = new GridLength(ratio, GridUnitType.Star);
+                MarkdownBrowserColumn.Width = new GridLength(0, GridUnitType.Star);
+            }
+            else
+            {
+                // MarkdownTextBoxColumnの幅を変更
+                TextBoxColumn.Width = new GridLength(ratio, GridUnitType.Star);
+                MarkdownBrowserColumn.Width = new GridLength(3, GridUnitType.Star);
+            }
         }
 
         private void Btn0Percent_Click(object sender, RoutedEventArgs e)
@@ -342,6 +441,11 @@ namespace Tumugu
         private void Btn50Percent_Click(object sender, RoutedEventArgs e)
         {
             ChangeMarkdownTextBoxWidth(3);
+        }
+
+        private void Btn100Percent_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeMarkdownTextBoxWidth(4);
         }
 
         private bool _isChanging = false; // 無限ループ防止フラグ
@@ -395,12 +499,11 @@ namespace Tumugu
         {
             if (rtb?.Document == null) return;
 
+            if (_isSimpleEditMode) return;              // シンプル編集モードならスキップ
+
             // RichTextBox内の全ブロックをループ
             foreach (var block in rtb.Document.Blocks)
             {
-                if (_isSimpleEditMode) continue;
-
-                // シンプル編集モードならスキップ
                 if (block is Paragraph paragraph)
                 {
                     // 段落のテキストを取得
@@ -473,20 +576,19 @@ namespace Tumugu
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                string droppedFile = files[0];
-
                 try
                 {
-                    // RichTextBoxの操作範囲を確定
-                    var document = RichMarkdownTextBox.Document;
-                    TextRange range = new TextRange(document.ContentStart, document.ContentEnd);
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    string droppedFile = files[0];
 
-                    // ファイルを「読み取り専用」かつ「共有許可」で開く（他アプリが使用中でも開けるようにする）
-                    using (FileStream fs = new FileStream(droppedFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {                   
-                        range.Load(fs, DataFormats.Text);           // DataFormats.Text で読み込み
-                    }
+                    string text = File.ReadAllText(droppedFile);
+
+                    TextRange range = new TextRange(
+                        RichMarkdownTextBox.Document.ContentStart,
+                        RichMarkdownTextBox.Document.ContentEnd
+                    );
+
+                    range.Text = text;
 
                     _currentEditFileName = droppedFile;
                     _currentEditFolder = System.IO.Path.GetDirectoryName(droppedFile);
@@ -496,12 +598,12 @@ namespace Tumugu
                 }
                 catch (Exception ex)
                 {
-                    // 6. ユーザーへの通知（ファイルがロックされている、権限がない等のエラー対応）
+                    // ファイルがロックされている、権限がない等のエラー対応
                     MessageBox.Show($"ファイルの読み込みに失敗しました:\n{ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
 
-            RewriteMarkdownBrowser();
+                MouseCursorReset(sender, e);
+            }
         }
 
         private void RichMarkdownTextBox_PreviewDragOver(object sender, DragEventArgs e)
@@ -520,12 +622,22 @@ namespace Tumugu
             }
             else
             {
-                e.Effects = DragDropEffects.None;
-                Mouse.OverrideCursor = null;
+                MouseCursorReset(sender, e);
             }
 
             // イベントを完了（標準の動作を抑制）
             e.Handled = true;
+        }
+
+        private void RichMarkdownTextBox_PreviewDragLeave(object sender, DragEventArgs e)
+        {
+            MouseCursorReset(sender, e);
+        }
+
+        private void MouseCursorReset(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+            Mouse.OverrideCursor = null;
         }
 
         private bool IsMarkdownLine(string text)
@@ -533,16 +645,9 @@ namespace Tumugu
             // 行頭の空白をトリミングして判定
             string line = text.TrimStart();
 
-            List<string> markdownKeywords = new List<string>
-            {
-                "#####", "####", "###", "##", "#", "```", "-", "---", ">"
-            };
-
             List<Regex> MarkdownPatterns = new List<Regex>
             {
-                //new Regex(@"^>+\s", RegexOptions.Compiled),             // 引用
-                //new Regex(@"^[-*]\s", RegexOptions.Compiled),           // リスト: - または *
-                new Regex(@"^#{1,5}\s", RegexOptions.Compiled),         // 見出し: #〜#####
+                new Regex(@"^#{1,6}\s", RegexOptions.Compiled),         // 見出し: #〜######
                 //new Regex(@"^```", RegexOptions.Compiled),              // コードブロック
                 new Regex(@"^!\[.*?\]\(.*?\)", RegexOptions.Compiled)   // 画像構文
             };
@@ -557,18 +662,12 @@ namespace Tumugu
 
             // RichTextBox 全文を TextRange として取得
             var textRange = new TextRange(RichMarkdownTextBox.Document.ContentStart, RichMarkdownTextBox.Document.ContentEnd);
-
-            // プレーンテキストとして保存
             File.WriteAllText(_currentEditFileName, textRange.Text);
-            lblEditFile.Foreground = Brushes.White;
         }
 
         private void BtnFolder_Click(object sender, RoutedEventArgs e)
         {
             ShowSaveDialog();
-
-            //Process.Start("explorer.exe", _currentEditFolder);
-
         }
 
         private void chkSimpleEdit_Checked(object sender, RoutedEventArgs e)
@@ -603,10 +702,10 @@ namespace Tumugu
             if (dialog.ShowDialog() == true)
             {
                 // 選択されたファイルパス
-                string path = dialog.FileName;
-
-                // 保存処理（例：空ファイルを作成）
-                System.IO.File.WriteAllText(path, "");
+                _currentEditFileName = dialog.FileName;
+                _currentEditFolder = System.IO.Path.GetDirectoryName(dialog.FileName);
+                var textRange = new TextRange(RichMarkdownTextBox.Document.ContentStart, RichMarkdownTextBox.Document.ContentEnd);
+                File.WriteAllText(_currentEditFileName, textRange.Text);
             }
         }
 

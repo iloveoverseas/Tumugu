@@ -41,3 +41,4 @@ C:\Develop\Tumugu\Tumugu\obj\Debug\Tumugu.csproj.CoreCompileInputs.cache
 C:\Develop\Tumugu\Tumugu\obj\Debug\Tumugu.csproj.Up2Date
 C:\Develop\Tumugu\Tumugu\obj\Debug\Tumugu.exe
 C:\Develop\Tumugu\Tumugu\obj\Debug\Tumugu.pdb
+C:\Develop\Tumugu\Tumugu\bin\Debug\Markdig.Wpf.dll
