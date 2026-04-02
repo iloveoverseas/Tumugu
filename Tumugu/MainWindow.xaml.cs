@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace Tumugu
 {
@@ -231,7 +232,7 @@ namespace Tumugu
             MarkdownBrowser.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
         }
 
-        private void CoreWebView2_ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
+        private async void CoreWebView2_ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
         {
             e.Handled = true; // 標準メニューを消す
 
@@ -243,10 +244,38 @@ namespace Tumugu
             {
                 MarkdownBrowser.CoreWebView2.ShowPrintUI();
             };
-
             menu.Items.Add(printItem);
 
-            // 右クリック位置に表示
+            //var printMhtmlItem = new System.Windows.Controls.MenuItem();
+            //printMhtmlItem.Header = "MHTML(単一HTML)として保存";
+            //printMhtmlItem.Click += async (s, ev) =>
+            //{
+            //    var dialog = new SaveFileDialog
+            //    {
+            //        Title = "MHTMLとして保存",
+            //        Filter = "MHTMLファイル (*.mhtml)|*.mhtml",
+            //        FileName = "export.mhtml"
+            //    };
+            //    if (dialog.ShowDialog() == true)
+            //    {
+            //        // DevTools Protocol で MHTML を取得
+            //        string resultJson = await MarkdownBrowser.CoreWebView2.CallDevToolsProtocolMethodAsync("Page.captureSnapshot", "{}");
+
+            //        // 結果は {"data":"...MHTML文字列..."} のはずなので data を取り出す
+            //        using var doc = JsonDocument.Parse(resultJson);
+            //        if (doc.RootElement.TryGetProperty("data", out var dataElem))
+            //        {
+            //            string mhtml = dataElem.GetString() ?? string.Empty;
+            //            File.WriteAllText(dialog.FileName, mhtml);
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show("MHTML 取得に失敗しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            //        }
+            //    }
+            //};
+            //menu.Items.Add(printMhtmlItem);
+
             menu.IsOpen = true;
         }
 
@@ -615,7 +644,7 @@ namespace Tumugu
             string drugFileFullPath = drugFiles[0];
 
             // ファイルが1つだけで、拡張子が .md なら受け入れ
-            if (drugFiles.Length == acceptDrugFileCount && Path.GetExtension(drugFileFullPath) == ".md")
+            if (drugFiles.Length == acceptDrugFileCount && System.IO.Path.GetExtension(drugFileFullPath) == ".md")
             {
                 e.Effects = DragDropEffects.Copy;
                 Mouse.OverrideCursor = Cursors.Hand;
